@@ -1,0 +1,28 @@
+# Smell Gate Report
+
+- Decision: `{{ decision }}`
+- Control level: `{{ control_level }}`
+- Confidence: `{{ confidence }}`
+- Destination: `{{ routing.destination }}`
+
+## Protected Invariant
+
+{{ protected_invariant }}
+
+## Failure Class
+
+- Subject: {{ failure_class.subject }}
+- Boundary: {{ failure_class.boundary }}
+- Bad pattern: {{ failure_class.bad_pattern }}
+
+## Required Proof
+
+{% for item in required_proof -%}
+- {{ item }}
+{% endfor %}
+
+## Retirement
+
+{{ retirement.condition }}
+
+Action: `{{ retirement.action }}`

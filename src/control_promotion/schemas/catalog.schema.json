@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Control Promotion Smell Catalog",
+  "type": "object",
+  "required": ["version", "smells"],
+  "properties": {
+    "version": { "type": "integer" },
+    "smells": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "fingerprint",
+          "protected_invariant",
+          "control_state",
+          "routing",
+          "required_proof",
+          "exception_policy",
+          "retirement"
+        ]
+      }
+    }
+  }
+}

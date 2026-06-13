@@ -1,0 +1,67 @@
+version: 1
+smells:
+  - id: frontend-semantic-metric-without-source
+    fingerprint:
+      subject: user-facing semantic metric
+      boundary: production frontend UI and i18n
+      bad_pattern: static metric literal presented as live KPI
+      missing_proof:
+        - api_source
+        - provider_source
+        - formula
+        - unavailable_state
+    protected_invariant: User-visible semantic business metrics must have provenance or an explicit unavailable state.
+    control_state:
+      level: L5_static_quality_guard
+      destination: scripts/quality
+    routing:
+      destination: scripts/quality
+      why:
+        - static_detectable
+        - actionable_failure_message_possible
+    required_proof:
+      - targeted_positive_case
+      - targeted_negative_case
+      - wrapper_command
+      - ci_mode
+    exception_policy:
+      required_fields:
+        - reason
+        - owner
+        - expires
+        - scope
+    retirement:
+      condition: Metric sinks only accept sourced, derived, or unavailable values.
+      action: downgrade_or_delete_heuristic_guard
+  - id: ssot-symlink-edit-without-ownership-check
+    fingerprint:
+      subject: single source of truth symlink
+      boundary: shared governance or harness document
+      bad_pattern: repo-local change made through an SSOT symlink
+      missing_proof:
+        - readlink_target
+        - ownership_classification
+        - overlay_decision
+    protected_invariant: Shared SSOT files must not absorb project-specific rules without explicit ownership review.
+    control_state:
+      level: L5_static_quality_guard
+      destination: scripts/quality
+    routing:
+      destination: scripts/quality
+      why:
+        - static_detectable
+        - stable_failure_class
+    required_proof:
+      - symlink_fixture
+      - non_symlink_fixture
+      - actionable_failure_message
+      - ci_mode
+    exception_policy:
+      required_fields:
+        - reason
+        - owner
+        - expires
+        - scope
+    retirement:
+      condition: All SSOT-owned paths are edited only through owner-approved workflows or project overlays.
+      action: keep_as_lightweight_pre_edit_guard

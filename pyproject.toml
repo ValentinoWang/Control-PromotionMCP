@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "control-promotion-mcp"
+version = "0.1.0"
+description = "Portable governance control-promotion CLI and MCP server."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+  { name = "Control Promotion MCP contributors" }
+]
+keywords = ["mcp", "governance", "quality", "ci", "agents"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development :: Quality Assurance"
+]
+dependencies = [
+  "PyYAML>=6.0"
+]
+
+[project.scripts]
+control-promotion = "control_promotion.cli:main"
+control-promotion-mcp = "control_promotion_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/control_promotion", "src/control_promotion_mcp"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src",
+  "tests",
+  "README.md",
+  "LICENSE",
+  ".control-promotion.yaml",
+  "references/smell-catalog.yaml"
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

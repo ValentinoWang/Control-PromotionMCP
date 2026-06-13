@@ -1,0 +1,27 @@
+routes:
+  docs:
+    level: L2_documentation
+    when:
+      - weak recurrence
+      - unclear machine-detectable fingerprint
+  .agents/skills:
+    level: L3_skill_workflow
+    when:
+      - repeatable agent workflow
+      - human judgment still required
+  scripts/quality:
+    level: L5_static_quality_guard
+    when:
+      - static-detectable fingerprint
+      - deterministic failure message possible
+      - CI execution is cheap
+  scripts/qa:
+    level: L6_runtime_qa_harness
+    when:
+      - runtime state is required
+      - screenshot, browser, app, or integration proof is required
+  type_schema_contract:
+    level: L7_type_schema_contract_prevention
+    when:
+      - interface can make invalid states impossible
+      - schema/type/API boundary owns the invariant

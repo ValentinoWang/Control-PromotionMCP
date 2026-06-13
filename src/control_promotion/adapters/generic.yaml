@@ -1,0 +1,39 @@
+version: 1
+project:
+  name: generic
+  type:
+    - generic
+paths:
+  root_agents: AGENTS.md
+  scoped_agents: []
+  skills: .agents/skills
+  docs: docs
+  quality: scripts/quality
+  qa: scripts/qa
+  agents_results: agents-results
+  harness_overlays: .harness/overlays
+  generated:
+    - generated/**
+    - "**/generated/**"
+ssot_links: []
+commands:
+  baseline_quality: []
+routing_overrides:
+  static_quality_guard:
+    destination: scripts/quality
+    test_path: tests/quality
+    wrapper_pattern: scripts/quality/run_{guard}.sh
+  runtime_qa_harness:
+    destination: scripts/qa
+    artifact_path: agents-results/qa-artifacts
+policies:
+  generated_artifact:
+    manual_edit: forbidden
+  allow_comment:
+    required_fields:
+      - reason
+      - owner
+      - expires
+      - scope
+  mcp_write_tools:
+    enabled: false

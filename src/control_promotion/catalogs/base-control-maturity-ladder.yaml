@@ -1,0 +1,50 @@
+levels:
+  L0:
+    name: raw_evidence
+    proof:
+      - incident_or_observation
+  L1:
+    name: reusable_observation
+    proof:
+      - named_failure_class
+      - recurrence_signal
+  L2:
+    name: documentation
+    proof:
+      - protected_invariant
+      - example
+  L3:
+    name: skill_workflow
+    proof:
+      - trigger_conditions
+      - expected_agent_outputs
+  L4:
+    name: scoped_agents_rule
+    proof:
+      - scoped_path
+      - exception_policy
+  L5:
+    name: static_quality_guard
+    proof:
+      - targeted_positive_case
+      - targeted_negative_case
+      - wrapper_command
+      - ci_mode
+  L6:
+    name: runtime_qa_harness
+    proof:
+      - runtime_fixture_or_route
+      - artifact_capture_path
+      - non_flaky_execution_boundary
+  L7:
+    name: type_schema_contract_prevention
+    proof:
+      - contract_owner
+      - migration_plan
+      - downstream_consumer_test
+  L8:
+    name: retired_guard
+    proof:
+      - stronger_replacement
+      - overlap_period
+      - retirement_record

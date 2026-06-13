@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Control Promotion Project Adapter",
+  "type": "object",
+  "required": ["version", "project", "paths", "policies"],
+  "properties": {
+    "version": { "type": "integer" },
+    "project": {
+      "type": "object",
+      "required": ["name"]
+    },
+    "paths": { "type": "object" },
+    "policies": { "type": "object" }
+  }
+}

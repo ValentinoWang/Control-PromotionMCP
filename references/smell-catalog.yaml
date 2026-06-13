@@ -1,0 +1,34 @@
+version: 1
+smells:
+  - id: mcp-write-tool-without-scope
+    fingerprint:
+      subject: MCP write tool
+      boundary: repository filesystem
+      bad_pattern: write-capable tool exposed without explicit path scope
+      missing_proof:
+        - write_scope
+        - forbidden_paths
+        - user_confirmation
+    protected_invariant: MCP tools must not write project files unless explicitly enabled and path-scoped.
+    control_state:
+      level: L5_static_quality_guard
+      destination: scripts/quality
+    routing:
+      destination: scripts/quality
+      why:
+        - static_detectable
+        - security_boundary
+    required_proof:
+      - targeted_positive_case
+      - targeted_negative_case
+      - actionable_failure_message
+      - ci_mode
+    exception_policy:
+      required_fields:
+        - reason
+        - owner
+        - expires
+        - scope
+    retirement:
+      condition: The server has no write tools or all write tools are capability-gated and path-scoped.
+      action: keep_schema_validation_as_ci_guard
