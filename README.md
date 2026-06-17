@@ -53,6 +53,8 @@ pip install -e .
 control-promotion inspect --project-root .
 control-promotion validate-adapter .control-promotion.yaml
 control-promotion validate-catalog references/smell-catalog.yaml
+control-promotion validate-guard-spec examples/guard-specs/good-creation-table-contract.yaml
+control-promotion review-guard examples/guard-specs/good-creation-table-contract.yaml
 control-promotion route \
   --failure-class frontend_semantic_metric_without_source \
   --detectability static \
@@ -116,6 +118,8 @@ The V1 HTTP server exposes `POST /mcp` and returns one JSON response. It binds t
 - `route_control_destination`
 - `validate_smell_catalog`
 - `validate_project_adapter`
+- `validate_guard_spec`
+- `review_guard_quality`
 - `render_smell_gate_report`
 - `check_ssot_links`
 
@@ -141,6 +145,58 @@ abstraction_review:
   recommendation: refactor_before_promote
 ```
 
+## GuardSpec Promotion Gate
+
+Starting in `v0.3.0`, static quality guards should provide a GuardSpec before promotion to L5. GuardSpec is the evidence layer that proves the guard protects a reusable invariant instead of one observed incident.
+
+Minimum shape:
+
+```yaml
+id: creation-table-name-contract
+protected_invariant: User-facing creation output targets must use the canonical table name.
+failure_class: deprecated_creation_table_alias
+contract:
+  owner: CREATION_OUTPUT_TABLE_CONTRACT
+  canonical: 03_创作任务总表
+  source: MEDIA_OS_CREATION_TASKS_URL
+scan_scope:
+  include:
+    - docs/说明书/**
+    - openclaw-agents/media/**
+  exclude:
+    - tmp/**
+    - agents-results/**
+    - tests/fixtures/**
+fixtures:
+  positive:
+    - 产出位置：写入 03_创作任务总表
+  negative:
+    - 产出位置：写入创作灵感表
+  near_miss:
+    - 事实源字段 current_node_title 可以保存历史标题“创作灵感表”
+  exception:
+    - allow reason=truth-source owner=media-os expires=2026-12-31 scope=registry.json
+exception_policy:
+  required_fields: [reason, owner, expires, scope]
+retirement:
+  stronger_control: schema_or_registry_contract
+  condition: All user-facing labels are rendered from the registry contract.
+  action: downgrade heuristic guard to a contract smoke check.
+```
+
+Examples:
+
+```bash
+control-promotion validate-guard-spec examples/guard-specs/good-creation-table-contract.yaml
+control-promotion review-guard examples/guard-specs/good-creation-table-contract.yaml
+control-promotion review --candidate examples/candidates/good-creation-table-contract.yaml
+
+control-promotion validate-guard-spec examples/guard-specs/bad-incident-string-guard.yaml
+control-promotion review --candidate examples/candidates/bad-incident-string-guard.yaml --format markdown
+```
+
+The bad sample is intentionally blocked because it has a one-incident phrase denylist, fixed file scope, no canonical contract, no near-miss fixture, incomplete exception policy, and no retirement path.
+
 ## Exposed MCP Resources
 
 - `control://ladder`
@@ -151,6 +207,9 @@ abstraction_review:
 - `catalog://base`
 - `catalog://project`
 - `adapter://project`
+- `schema://guard-spec`
+- `sample://guard-spec/good-creation-table-contract`
+- `sample://guard-spec/bad-incident-string-guard`
 - `template://smell-gate-report`
 
 ## Exposed MCP Prompts
@@ -182,6 +241,7 @@ Future write tools should remain disabled by default, require explicit path scop
 python -m unittest discover -s tests
 PYTHONPATH=src python -m control_promotion.cli validate-adapter .control-promotion.yaml
 PYTHONPATH=src python -m control_promotion.cli validate-catalog references/smell-catalog.yaml
+PYTHONPATH=src python -m control_promotion.cli validate-guard-spec examples/guard-specs/good-creation-table-contract.yaml
 ```
 
 This repository intentionally does not use GitHub Actions. Run the local validation commands above before publishing a commit or tag.

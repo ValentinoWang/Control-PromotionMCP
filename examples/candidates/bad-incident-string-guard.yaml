@@ -1,0 +1,21 @@
+candidate_text: |
+  creation table name guard prevents user-facing deprecated table aliases.
+evidence:
+  guard_spec_path: examples/guard-specs/bad-incident-string-guard.yaml
+  paths:
+    - scripts/quality/check_creation_table_name_guard.py
+  snippets:
+    - |
+      FORBIDDEN_USER_FACING_CREATION_TABLE_PHRASES = (
+          "创作灵感表",
+          "灵感表：",
+          "写入创作灵感表",
+      )
+      ALLOWED_FILES = (
+          "openclaw-agents/media/AGENTS.md",
+          "openclaw-agents/media/USER.md",
+          "openclaw-agents/media/TOOLS.md",
+      )
+context:
+  recurrence: repeated
+  harm: high

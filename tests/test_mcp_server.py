@@ -49,6 +49,24 @@ class MCPServerTest(unittest.TestCase):
         uris = {item["uri"] for item in response["result"]["resources"]}
         self.assertIn("control://ladder", uris)
         self.assertIn("adapter://project", uris)
+        self.assertIn("schema://guard-spec", uris)
+
+    def test_validate_guard_spec_tool(self) -> None:
+        server = ControlPromotionMCP(".")
+        response = server.handle(
+            {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "tools/call",
+                "params": {
+                    "name": "validate_guard_spec",
+                    "arguments": {"path": "examples/guard-specs/good-creation-table-contract.yaml"},
+                },
+            }
+        )
+        self.assertIsNotNone(response)
+        content = response["result"]["structuredContent"]
+        self.assertTrue(content["valid"])
 
 
 if __name__ == "__main__":

@@ -15,6 +15,9 @@ STATIC_RESOURCES = {
     "control://retirement-policy": "catalogs/base-control-maturity-ladder.yaml",
     "catalog://base": "catalogs/base-smell-catalog.yaml",
     "template://smell-gate-report": "templates/smell_gate_report.md.j2",
+    "schema://guard-spec": "schemas/guard_spec.schema.json",
+    "sample://guard-spec/good-creation-table-contract": "samples/good_creation_table_contract.yaml",
+    "sample://guard-spec/bad-incident-string-guard": "samples/bad_incident_string_guard.yaml",
 }
 
 
@@ -44,6 +47,11 @@ def read_resource(uri: str, project_root: str | Path = ".") -> tuple[str, str]:
     if uri in STATIC_RESOURCES:
         package_root = resources.files("control_promotion")
         content = (package_root / STATIC_RESOURCES[uri]).read_text(encoding="utf-8")
-        mime = "text/markdown" if uri.startswith("template://") else "application/yaml"
+        if uri.startswith("template://"):
+            mime = "text/markdown"
+        elif uri.startswith("schema://"):
+            mime = "application/json"
+        else:
+            mime = "application/yaml"
         return content, mime
     raise KeyError(f"unknown resource URI: {uri}")

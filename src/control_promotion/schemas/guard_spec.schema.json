@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Control Promotion GuardSpec",
+  "type": "object",
+  "required": [
+    "id",
+    "protected_invariant",
+    "failure_class",
+    "contract",
+    "scan_scope",
+    "fixtures",
+    "exception_policy",
+    "retirement"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "protected_invariant": { "type": "string" },
+    "failure_class": { "type": "string" },
+    "contract": {
+      "type": "object",
+      "required": ["owner", "canonical", "source"]
+    },
+    "scan_scope": {
+      "type": "object",
+      "required": ["include", "exclude"]
+    },
+    "fixtures": {
+      "type": "object",
+      "required": ["positive", "negative", "near_miss", "exception"]
+    },
+    "exception_policy": {
+      "type": "object",
+      "required": ["required_fields"]
+    },
+    "retirement": {
+      "type": "object",
+      "required": ["stronger_control", "condition", "action"]
+    }
+  }
+}

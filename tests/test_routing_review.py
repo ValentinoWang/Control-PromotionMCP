@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unittest
 
+from control_promotion.io import load_data
 from control_promotion.review import evaluate_control_candidate
 from control_promotion.core.routing import route_control_destination
 
@@ -35,10 +36,11 @@ class RoutingReviewTest(unittest.TestCase):
             evidence={"paths": ["scripts/quality/check_frontend_metric_source_guard.py"]},
             context={"recurrence": "repeated", "harm": "high"},
         )
-        self.assertIn(review["decision"], {"promote", "promote_with_follow_up"})
+        self.assertEqual(review["decision"], "refactor_before_promote")
         self.assertIn("retirement", review)
         self.assertIn("required_proof", review)
         self.assertIn("abstraction_review", review)
+        self.assertIn("guard_quality_review", review)
 
     def test_incident_string_guard_is_flagged_as_overfit(self) -> None:
         review = evaluate_control_candidate(
@@ -99,17 +101,20 @@ class RoutingReviewTest(unittest.TestCase):
                 "contract": {
                     "owner": "CREATION_OUTPUT_TABLE_CONTRACT",
                     "canonical": "03_创作任务总表",
-                    "env_key": "MEDIA_OS_CREATION_TASKS_URL",
+                    "source": "MEDIA_OS_CREATION_TASKS_URL",
                 },
+                "guard_spec": load_data("examples/guard-specs/good-creation-table-contract.yaml"),
             },
             context={"recurrence": "repeated", "harm": "high"},
         )
 
         abstraction = review["abstraction_review"]
+        gate = review["guard_quality_review"]["promotion_gate"]
         self.assertEqual(review["decision"], "promote")
         self.assertEqual(review["control_level"], "L5_static_quality_guard")
         self.assertEqual(abstraction["specificity_risk"], "low")
         self.assertEqual(abstraction["recommendation"], "promote")
+        self.assertTrue(gate["can_promote_to_L5"])
 
 
 if __name__ == "__main__":

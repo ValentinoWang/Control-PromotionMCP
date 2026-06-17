@@ -32,6 +32,32 @@ class CLITest(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("scripts/quality", stdout.getvalue())
 
+    def test_validate_guard_spec_command(self) -> None:
+        with redirect_stdout(io.StringIO()) as stdout:
+            code = main(
+                [
+                    "validate-guard-spec",
+                    "examples/guard-specs/good-creation-table-contract.yaml",
+                    "--format",
+                    "json",
+                ]
+            )
+        self.assertEqual(code, 0)
+        self.assertIn('"valid": true', stdout.getvalue())
+
+    def test_review_guard_command_blocks_bad_spec(self) -> None:
+        with redirect_stdout(io.StringIO()) as stdout:
+            code = main(
+                [
+                    "review-guard",
+                    "examples/guard-specs/bad-incident-string-guard.yaml",
+                    "--format",
+                    "json",
+                ]
+            )
+        self.assertEqual(code, 1)
+        self.assertIn('"can_promote_to_L5": false', stdout.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

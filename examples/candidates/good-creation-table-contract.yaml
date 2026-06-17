@@ -1,0 +1,24 @@
+candidate_text: |
+  creation table name guard enforces a canonical table-name contract with scoped surface discovery.
+evidence:
+  guard_spec_path: examples/guard-specs/good-creation-table-contract.yaml
+  paths:
+    - scripts/quality/check_creation_table_name_guard.py
+  snippets:
+    - |
+      CREATION_TABLE_NAME_CONTRACT = {
+          "owner": "CREATION_OUTPUT_TABLE_CONTRACT",
+          "canonical": "03_创作任务总表",
+          "source": "MEDIA_OS_CREATION_TASKS_URL",
+          "deprecated_aliases": {"创作灵感表", "灵感表"},
+      }
+      SCAN_ROOTS = ("docs/说明书", "openclaw-agents/media", "openclaw-feishu-reminder")
+      EXCLUDE_PATHS = ("tmp/**", "agents-results/**", "tests/fixtures/**", "generated/**")
+  fixtures:
+    positive:
+      - 产出位置：写入 03_创作任务总表
+    negative:
+      - 产出位置：写入创作灵感表
+context:
+  recurrence: repeated
+  harm: high

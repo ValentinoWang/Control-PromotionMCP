@@ -8,8 +8,10 @@ from pathlib import Path
 from typing import Any, Callable
 
 from control_promotion import __version__
+from control_promotion.core.guard_spec import review_guard_quality, validate_guard_spec_data
 from control_promotion.core.ladder import ladder_as_dict
 from control_promotion.core.routing import route_control_destination
+from control_promotion.io import load_data
 from control_promotion.inspect import check_ssot_links, inspect_project
 from control_promotion.prompts import PROMPTS, render_prompt
 from control_promotion.reporting import render_smell_gate_report
@@ -65,6 +67,16 @@ class ControlPromotionMCP:
                 "Validate a project adapter file.",
                 _schema({"path": {"type": "string"}}, ["path"]),
                 self._validate_project_adapter,
+            ),
+            "validate_guard_spec": (
+                "Validate a GuardSpec file before a quality guard can be promoted.",
+                _schema({"path": {"type": "string"}, "guard_spec": {"type": "object"}}, []),
+                self._validate_guard_spec,
+            ),
+            "review_guard_quality": (
+                "Review GuardSpec quality and promotion gate readiness.",
+                _schema({"path": {"type": "string"}, "guard_spec": {"type": "object"}}, []),
+                self._review_guard_quality,
             ),
             "render_smell_gate_report": (
                 "Render a Markdown smell gate report from a candidate or review object.",
@@ -208,6 +220,12 @@ class ControlPromotionMCP:
     def _validate_project_adapter(self, args: dict[str, Any]) -> dict[str, Any]:
         return validate_project_adapter(_resolve_path(args["path"], self.project_root))
 
+    def _validate_guard_spec(self, args: dict[str, Any]) -> dict[str, Any]:
+        return validate_guard_spec_data(self._guard_spec_from_args(args))
+
+    def _review_guard_quality(self, args: dict[str, Any]) -> dict[str, Any]:
+        return review_guard_quality(self._guard_spec_from_args(args))
+
     def _render_smell_gate_report(self, args: dict[str, Any]) -> dict[str, str]:
         review = args.get("review")
         if not isinstance(review, dict):
@@ -223,6 +241,17 @@ class ControlPromotionMCP:
         if not isinstance(paths, list):
             raise ValueError("paths must be a list")
         return check_ssot_links([str(path) for path in paths], self.project_root, self.adapter)
+
+    def _guard_spec_from_args(self, args: dict[str, Any]) -> dict[str, Any]:
+        guard_spec = args.get("guard_spec")
+        if isinstance(guard_spec, dict):
+            return guard_spec
+        path = args.get("path")
+        if isinstance(path, str):
+            loaded = load_data(_resolve_path(path, self.project_root))
+            if isinstance(loaded, dict):
+                return loaded
+        raise ValueError("provide either path or guard_spec")
 
 
 def run_stdio(server: ControlPromotionMCP) -> None:

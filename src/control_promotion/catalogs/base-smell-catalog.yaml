@@ -101,3 +101,38 @@ smells:
     retirement:
       condition: The guard is backed by a canonical contract, scoped surface discovery, and passing/failing fixtures.
       action: promote_after_refactor
+  - id: l5-guard-without-promotable-guard-spec
+    fingerprint:
+      subject: static quality guard
+      boundary: L5 promotion gate
+      bad_pattern: guard promoted without a valid GuardSpec and promotion gate proof
+      missing_proof:
+        - guard_spec
+        - named_contract
+        - scoped_surface_discovery
+        - positive_negative_near_miss_exception_fixtures
+        - exception_policy
+        - retirement_path
+    protected_invariant: Static quality guards must prove reusable control quality before L5 promotion.
+    control_state:
+      level: L5_static_quality_guard
+      destination: scripts/quality
+      promotion_blocker: guard_quality_review.promotion_gate.can_promote_to_L5 == false
+    routing:
+      destination: scripts/quality
+      why:
+        - guard_quality_gate
+        - promotion_proof_required
+    required_proof:
+      - valid_guard_spec
+      - promotion_gate_can_promote_to_L5
+      - local_validation_command
+    exception_policy:
+      required_fields:
+        - reason
+        - owner
+        - expires
+        - scope
+    retirement:
+      condition: Every L5 guard in the project has a valid GuardSpec and local review-guard command.
+      action: keep_as_meta_guard_policy

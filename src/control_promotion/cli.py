@@ -8,6 +8,7 @@ from control_promotion.inspect import check_ssot_links, inspect_project
 from control_promotion.io import dump_data, load_data
 from control_promotion.reporting import render_smell_gate_report
 from control_promotion.review import evaluate_control_candidate
+from control_promotion.core.guard_spec import review_guard_quality, validate_guard_spec_data
 from control_promotion.core.routing import route_control_destination
 from control_promotion.validation import validate_project_adapter, validate_smell_catalog
 
@@ -27,6 +28,14 @@ def main(argv: list[str] | None = None) -> int:
     catalog_parser = sub.add_parser("validate-catalog")
     catalog_parser.add_argument("path")
     catalog_parser.add_argument("--format", choices=("yaml", "json"), default="yaml")
+
+    guard_spec_parser = sub.add_parser("validate-guard-spec")
+    guard_spec_parser.add_argument("path")
+    guard_spec_parser.add_argument("--format", choices=("yaml", "json"), default="yaml")
+
+    review_guard_parser = sub.add_parser("review-guard")
+    review_guard_parser.add_argument("path")
+    review_guard_parser.add_argument("--format", choices=("yaml", "json"), default="yaml")
 
     route_parser = sub.add_parser("route")
     route_parser.add_argument("--failure-class", default="")
@@ -61,6 +70,14 @@ def main(argv: list[str] | None = None) -> int:
         result = validate_smell_catalog(args.path)
         _print(result, args.format)
         return 0 if result["valid"] else 1
+    if args.command == "validate-guard-spec":
+        result = validate_guard_spec_data(load_data(args.path))
+        _print(result, args.format)
+        return 0 if result["valid"] else 1
+    if args.command == "review-guard":
+        result = review_guard_quality(load_data(args.path))
+        _print(result, args.format)
+        return 0 if result["promotion_gate"]["can_promote_to_L5"] else 1
     if args.command == "route":
         result = route_control_destination(
             failure_class=args.failure_class,
@@ -93,9 +110,15 @@ def _review_from_arg(candidate: str) -> dict:
         data = load_data(path)
         if not isinstance(data, dict):
             raise SystemExit("candidate file must contain an object")
+        evidence = data.get("evidence", {})
+        if not isinstance(evidence, dict):
+            raise SystemExit("candidate.evidence must contain an object")
+        guard_spec_path = evidence.get("guard_spec_path")
+        if isinstance(guard_spec_path, str):
+            evidence = {**evidence, "guard_spec": load_data(guard_spec_path)}
         return evaluate_control_candidate(
             str(data.get("candidate_text", "")),
-            evidence=data.get("evidence", {}),
+            evidence=evidence,
             context=data.get("context", {}),
         )
     return evaluate_control_candidate(candidate)

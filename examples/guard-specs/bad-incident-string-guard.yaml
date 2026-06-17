@@ -1,0 +1,24 @@
+id: creation-table-name-incident-denylist
+protected_invariant: User-facing copy should not mention the old creation table name.
+failure_class: creation_table_alias_seen_once
+contract:
+  owner: ""
+  canonical: ""
+  source: ""
+scan_scope:
+  include:
+    - openclaw-agents/media/AGENTS.md
+  exclude: []
+fixtures:
+  positive: []
+  negative:
+    - 产出位置：写入创作灵感表
+  near_miss: []
+  exception: []
+exception_policy:
+  required_fields:
+    - reason
+retirement:
+  stronger_control: ""
+  condition: ""
+  action: ""

@@ -4,6 +4,7 @@ from typing import Any
 
 from control_promotion.core.abstraction import review_abstraction
 from control_promotion.core.fingerprint import classify_failure_class
+from control_promotion.core.guard_spec import review_guard_quality
 from control_promotion.core.proof_obligation import proof_for_level
 from control_promotion.core.retirement import retirement_condition
 from control_promotion.core.routing import route_control_destination
@@ -29,7 +30,8 @@ def evaluate_control_candidate(
     provided_commands = evidence.get("commands", []) if isinstance(evidence, dict) else []
     confidence = "guarded" if provided_paths or provided_commands else "tentative"
     abstraction_review = review_abstraction(candidate_text, evidence)
-    decision = _decision_for(route.control_level, abstraction_review)
+    guard_quality_review = review_guard_quality(evidence.get("guard_spec"), abstraction_review)
+    decision = _decision_for(route.control_level, abstraction_review, guard_quality_review)
 
     return {
         "decision": decision,
@@ -45,6 +47,7 @@ def evaluate_control_candidate(
             "commands": provided_commands,
         },
         "abstraction_review": abstraction_review,
+        "guard_quality_review": guard_quality_review,
         "retirement": retirement_condition(route.control_level, str(fingerprint["bad_pattern"])),
     }
 
@@ -72,9 +75,16 @@ def _future_level(control_level: str) -> str:
     return control_level
 
 
-def _decision_for(control_level: str, abstraction_review: dict[str, Any]) -> str:
+def _decision_for(
+    control_level: str,
+    abstraction_review: dict[str, Any],
+    guard_quality_review: dict[str, Any],
+) -> str:
     if not control_level.startswith(("L5", "L6", "L7")):
         return "hold"
+    gate = guard_quality_review["promotion_gate"]
+    if control_level.startswith("L5") and not gate["can_promote_to_L5"]:
+        return gate["decision"]
     specificity_risk = abstraction_review["specificity_risk"]
     if specificity_risk == "high":
         return "refactor_before_promote"

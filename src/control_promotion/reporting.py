@@ -7,6 +7,8 @@ def render_smell_gate_report(review: dict[str, Any]) -> str:
     failure = review.get("failure_class", {})
     routing = review.get("routing", {})
     abstraction = review.get("abstraction_review", {})
+    guard_quality = review.get("guard_quality_review", {})
+    promotion_gate = guard_quality.get("promotion_gate", {})
     lines = [
         "# Smell Gate Report",
         "",
@@ -15,6 +17,7 @@ def render_smell_gate_report(review: dict[str, Any]) -> str:
         f"- Confidence: `{review.get('confidence', 'unknown')}`",
         f"- Destination: `{routing.get('destination', 'unknown')}`",
         f"- Specificity risk: `{abstraction.get('specificity_risk', 'unknown')}`",
+        f"- Can promote to L5: `{promotion_gate.get('can_promote_to_L5', 'unknown')}`",
         "",
         "## Protected Invariant",
         "",
@@ -51,6 +54,19 @@ def render_smell_gate_report(review: dict[str, Any]) -> str:
         ]
     )
     lines.extend(_bullet_or_none(abstraction.get("missing_abstraction", [])))
+    lines.extend(
+        [
+            "",
+            "## Guard Quality / Promotion Gate",
+            "",
+            f"- Can promote to L5: `{promotion_gate.get('can_promote_to_L5', 'unknown')}`",
+            f"- Gate decision: `{promotion_gate.get('decision', 'unknown')}`",
+            "",
+            "### Blockers",
+            "",
+        ]
+    )
+    lines.extend(_bullet_or_none(promotion_gate.get("blockers", [])))
     lines.extend(
         [
             "",

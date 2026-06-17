@@ -5,6 +5,7 @@
 - Confidence: `{{ confidence }}`
 - Destination: `{{ routing.destination }}`
 - Specificity risk: `{{ abstraction_review.specificity_risk }}`
+- Can promote to L5: `{{ guard_quality_review.promotion_gate.can_promote_to_L5 }}`
 
 ## Protected Invariant
 
@@ -36,6 +37,17 @@
 ### Missing Abstraction
 
 {% for item in abstraction_review.missing_abstraction -%}
+- {{ item }}
+{% endfor %}
+
+## Guard Quality / Promotion Gate
+
+- Can promote to L5: `{{ guard_quality_review.promotion_gate.can_promote_to_L5 }}`
+- Gate decision: `{{ guard_quality_review.promotion_gate.decision }}`
+
+### Blockers
+
+{% for item in guard_quality_review.promotion_gate.blockers -%}
 - {{ item }}
 {% endfor %}
 

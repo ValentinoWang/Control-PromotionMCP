@@ -1,0 +1,36 @@
+id: creation-table-name-contract
+protected_invariant: User-facing creation output targets must use the canonical table name.
+failure_class: deprecated_creation_table_alias
+contract:
+  owner: CREATION_OUTPUT_TABLE_CONTRACT
+  canonical: 03_创作任务总表
+  source: MEDIA_OS_CREATION_TASKS_URL
+scan_scope:
+  include:
+    - docs/说明书/**
+    - openclaw-agents/media/**
+    - openclaw-feishu-reminder/**
+  exclude:
+    - tmp/**
+    - agents-results/**
+    - tests/fixtures/**
+    - generated/**
+fixtures:
+  positive:
+    - 产出位置：写入 03_创作任务总表
+  negative:
+    - 产出位置：写入创作灵感表
+  near_miss:
+    - 事实源字段 current_node_title 可以保存历史标题“创作灵感表”
+  exception:
+    - allow reason=truth-source owner=media-os expires=2026-12-31 scope=openclaw-feishu-reminder/media-bitable-registry.json
+exception_policy:
+  required_fields:
+    - reason
+    - owner
+    - expires
+    - scope
+retirement:
+  stronger_control: schema_or_registry_contract
+  condition: All user-facing creation table labels are rendered from the registry contract.
+  action: downgrade heuristic guard to a contract smoke check.

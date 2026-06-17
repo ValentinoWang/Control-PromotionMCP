@@ -15,7 +15,6 @@ def review_abstraction(candidate_text: str, evidence: dict[str, Any] | None = No
     has_fixture_pair = _has_fixture_pair(evidence)
     has_surface_discovery = _has_surface_discovery(lower)
     has_exception_policy = _has_exception_policy(source_text, evidence)
-    has_downstream_test = _has_downstream_test(source_text, evidence)
 
     if _has_literal_denylist(source_text):
         overfit_signals.append("literal_incident_phrase_denylist")
@@ -25,8 +24,6 @@ def review_abstraction(candidate_text: str, evidence: dict[str, Any] | None = No
         overfit_signals.append("missing_targeted_fixtures")
     if not has_contract:
         overfit_signals.append("missing_canonical_contract")
-    if "contract" in lower and not has_downstream_test:
-        overfit_signals.append("no_downstream_consumer_test")
 
     if not has_contract:
         missing_abstraction.append("canonical_contract")
@@ -36,8 +33,6 @@ def review_abstraction(candidate_text: str, evidence: dict[str, Any] | None = No
         missing_abstraction.append("scoped_surface_discovery")
     if not has_exception_policy:
         missing_abstraction.append("exception_policy")
-    if "contract" in lower and not has_downstream_test:
-        missing_abstraction.append("downstream_consumer_test")
 
     specificity_risk = _risk_level(overfit_signals, missing_abstraction)
     return {
@@ -67,6 +62,16 @@ def _combined_source_text(candidate_text: str, evidence: dict[str, Any]) -> str:
     contract = evidence.get("contract")
     if isinstance(contract, dict):
         parts.extend(f"{key}: {value}" for key, value in contract.items())
+    guard_spec = evidence.get("guard_spec")
+    if isinstance(guard_spec, dict):
+        for key in ("contract", "fixtures", "exception_policy", "scan_scope"):
+            value = guard_spec.get(key)
+            if isinstance(value, dict):
+                parts.extend(
+                    f"{key}.{nested_key}: {nested_value}"
+                    for nested_key, nested_value in value.items()
+                    if nested_value
+                )
     return "\n".join(parts)
 
 
@@ -90,6 +95,11 @@ def _has_contract(source_text: str, evidence: dict[str, Any]) -> bool:
     contract = evidence.get("contract")
     if isinstance(contract, dict) and contract.get("canonical") and (contract.get("owner") or contract.get("env_key")):
         return True
+    guard_spec = evidence.get("guard_spec")
+    if isinstance(guard_spec, dict):
+        guard_contract = guard_spec.get("contract")
+        if isinstance(guard_contract, dict) and guard_contract.get("canonical") and guard_contract.get("owner"):
+            return True
     lower = source_text.lower()
     required_any = ("canonical", "canonical_contract", "table_name_contract")
     return any(token in lower for token in required_any) and ("owner" in lower or "env_key" in lower)
@@ -97,6 +107,10 @@ def _has_contract(source_text: str, evidence: dict[str, Any]) -> bool:
 
 def _has_fixture_pair(evidence: dict[str, Any]) -> bool:
     fixtures = evidence.get("fixtures")
+    if not isinstance(fixtures, dict):
+        guard_spec = evidence.get("guard_spec")
+        if isinstance(guard_spec, dict):
+            fixtures = guard_spec.get("fixtures")
     if not isinstance(fixtures, dict):
         return False
     positive = fixtures.get("positive") or fixtures.get("passing")
@@ -122,19 +136,15 @@ def _has_surface_discovery(lower_source_text: str) -> bool:
 
 def _has_exception_policy(source_text: str, evidence: dict[str, Any]) -> bool:
     policy = evidence.get("exception_policy")
+    if not isinstance(policy, dict):
+        guard_spec = evidence.get("guard_spec")
+        if isinstance(guard_spec, dict):
+            policy = guard_spec.get("exception_policy")
     if isinstance(policy, dict):
         required = {"reason", "owner", "expires", "scope"}
         return required.issubset(set(policy.get("required_fields", [])) | set(policy.keys()))
     lower = source_text.lower()
     return all(token in lower for token in ("reason", "owner", "expires", "scope"))
-
-
-def _has_downstream_test(source_text: str, evidence: dict[str, Any]) -> bool:
-    tests = evidence.get("tests")
-    if isinstance(tests, list) and any("consumer" in str(test).lower() for test in tests):
-        return True
-    lower = source_text.lower()
-    return "downstream consumer" in lower or "consumer test" in lower
 
 
 def _mentions_alias_or_table(lower_source_text: str) -> bool:

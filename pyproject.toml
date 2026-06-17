@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "control-promotion-mcp"
-version = "0.2.1"
+version = "0.3.0"
 description = "Portable governance control-promotion CLI and MCP server."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -35,6 +35,7 @@ packages = ["src/control_promotion", "src/control_promotion_mcp"]
 [tool.hatch.build.targets.sdist]
 include = [
   "src",
+  "examples",
   "tests",
   "README.md",
   "LICENSE",
