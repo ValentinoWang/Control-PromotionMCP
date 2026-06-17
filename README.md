@@ -183,3 +183,5 @@ python -m unittest discover -s tests
 PYTHONPATH=src python -m control_promotion.cli validate-adapter .control-promotion.yaml
 PYTHONPATH=src python -m control_promotion.cli validate-catalog references/smell-catalog.yaml
 ```
+
+This repository intentionally does not use GitHub Actions. Run the local validation commands above before publishing a commit or tag.
