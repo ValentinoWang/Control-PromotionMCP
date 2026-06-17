@@ -1,0 +1,24 @@
+id: model-provider-drift-generated-misclassified
+protected_invariant: Generated config should not mention legacy providers.
+failure_class: generated_provider_string_seen_once
+contract:
+  owner: ""
+  canonical: ""
+  source: ""
+scan_scope:
+  include:
+    - generated/provider_snapshot.json
+  exclude: []
+fixtures:
+  positive: []
+  negative:
+    - generated provider snapshot contains legacy-qwen
+  near_miss: []
+  exception: []
+exception_policy:
+  required_fields:
+    - reason
+retirement:
+  stronger_control: ""
+  condition: ""
+  action: ""

@@ -18,6 +18,7 @@ STATIC_RESOURCES = {
     "schema://guard-spec": "schemas/guard_spec.schema.json",
     "sample://guard-spec/good-creation-table-contract": "samples/good_creation_table_contract.yaml",
     "sample://guard-spec/bad-incident-string-guard": "samples/bad_incident_string_guard.yaml",
+    "sample://guard-spec/good-model-provider-drift": "samples/good_model_provider_drift.yaml",
 }
 
 

@@ -1,0 +1,25 @@
+candidate_text: |
+  model-provider-drift guard prevents business code and runtime entrypoints from bypassing
+  config/openclaw_bots.json policy.default_provider and falling back to legacy provider/model.
+evidence:
+  guard_spec_path: examples/guard-specs/good-model-provider-drift.yaml
+  paths:
+    - scripts/quality/check_model_provider_drift_guard.py
+  snippets:
+    - |
+      MODEL_PROVIDER_POLICY_CONTRACT = {
+          "owner": "MODEL_PROVIDER_POLICY_CONTRACT",
+          "canonical": "config/openclaw_bots.json policy.default_provider",
+          "source": "config/openclaw_bots.json",
+          "deprecated_aliases": {"legacy-qwen", "legacy-openai"},
+      }
+      SCAN_ROOTS = ("openclaw-agents", "openclaw-runtime", "openclaw-feishu-reminder", "config/openclaw_bots.json")
+      EXCLUDE_PATHS = ("tmp/**", "agents-results/**", "tests/fixtures/**", "generated/**")
+  fixtures:
+    positive:
+      - provider = resolve_default_provider(bot_config.policy.default_provider)
+    negative:
+      - provider = LegacyProvider("legacy-qwen")
+context:
+  recurrence: repeated
+  harm: high

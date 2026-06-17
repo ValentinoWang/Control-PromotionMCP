@@ -1,0 +1,37 @@
+id: model-provider-drift
+protected_invariant: Runtime model provider selection must resolve through config/openclaw_bots.json policy.default_provider.
+failure_class: model_provider_drift
+contract:
+  owner: MODEL_PROVIDER_POLICY_CONTRACT
+  canonical: config/openclaw_bots.json policy.default_provider
+  source: config/openclaw_bots.json
+scan_scope:
+  include:
+    - openclaw-agents/**
+    - openclaw-runtime/**
+    - openclaw-feishu-reminder/**
+    - config/openclaw_bots.json
+  exclude:
+    - tmp/**
+    - agents-results/**
+    - tests/fixtures/**
+    - generated/**
+fixtures:
+  positive:
+    - provider = resolve_default_provider(bot_config.policy.default_provider)
+  negative:
+    - provider = LegacyProvider("legacy-qwen")
+  near_miss:
+    - generated config snapshot may contain legacy provider names only as deprecated aliases
+  exception:
+    - allow reason=migration-test owner=platform expires=2026-12-31 scope=tests/fixtures/model-provider-drift/**
+exception_policy:
+  required_fields:
+    - reason
+    - owner
+    - expires
+    - scope
+retirement:
+  stronger_control: resolver_schema_contract
+  condition: Provider/model selection is impossible outside the canonical resolver and registry schema.
+  action: downgrade heuristic guard to resolver contract smoke check.

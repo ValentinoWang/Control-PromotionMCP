@@ -33,6 +33,42 @@ smells:
     retirement:
       condition: Metric sinks only accept sourced, derived, or unavailable values.
       action: downgrade_or_delete_heuristic_guard
+  - id: model-provider-drift
+    fingerprint:
+      subject: model provider resolution
+      boundary: business code, runtime entrypoints, and bot config policy
+      bad_pattern: business code or runtime bypasses config/openclaw_bots.json policy.default_provider and falls back to legacy provider/model
+      missing_proof:
+        - config_policy_source
+        - resolver_entrypoint
+        - runtime_sink_discovery
+        - legacy_provider_alias_set
+        - positive_negative_runtime_or_static_fixtures
+    protected_invariant: Business code and runtime model resolution must consume config/openclaw_bots.json policy.default_provider through the canonical resolver.
+    control_state:
+      level: L5_static_quality_guard
+      destination: scripts/quality
+    routing:
+      destination: scripts/quality
+      why:
+        - static_detectable
+        - policy_ssot_drift
+        - runtime_bypass_risk
+    required_proof:
+      - valid_guard_spec
+      - policy_default_provider_fixture
+      - legacy_provider_rejection_fixture
+      - runtime_sink_discovery
+      - actionable_failure_message
+    exception_policy:
+      required_fields:
+        - reason
+        - owner
+        - expires
+        - scope
+    retirement:
+      condition: Provider/model selection is impossible outside the canonical resolver and registry schema.
+      action: downgrade heuristic guard to resolver contract smoke check
   - id: ssot-symlink-edit-without-ownership-check
     fingerprint:
       subject: single source of truth symlink

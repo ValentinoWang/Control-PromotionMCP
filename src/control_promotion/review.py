@@ -56,6 +56,8 @@ def _infer_detectability(candidate_text: str, evidence: dict[str, Any]) -> str:
     text = candidate_text.lower()
     paths = " ".join(str(path).lower() for path in evidence.get("paths", []))
     joined = f"{text} {paths}"
+    if "model-provider-drift" in joined or "policy.default_provider" in joined:
+        return "static"
     if any(token in joined for token in ("screenshot", "playwright", "appium", "e2e", "runtime", "browser")):
         return "runtime"
     if any(token in joined for token in ("schema", "openapi", "type_schema", "sdk")):

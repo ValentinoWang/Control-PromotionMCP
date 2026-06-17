@@ -42,7 +42,10 @@ def route_control_destination(
             },
         )
 
-    if any(token in text for token in ("runtime", "screenshot", "visual", "e2e", "browser", "navigation")):
+    if detectability == "runtime" or (
+        detectability != "static"
+        and any(token in text for token in ("runtime", "screenshot", "visual", "e2e", "browser", "navigation"))
+    ):
         return RouteDecision(
             destination="scripts/qa",
             control_level="L6_runtime_qa_harness",

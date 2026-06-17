@@ -116,6 +116,32 @@ class RoutingReviewTest(unittest.TestCase):
         self.assertEqual(abstraction["recommendation"], "promote")
         self.assertTrue(gate["can_promote_to_L5"])
 
+    def test_model_provider_drift_is_not_classified_as_generated_artifact(self) -> None:
+        review = evaluate_control_candidate(
+            "model-provider-drift guard checks generated config snapshots so runtime code cannot bypass "
+            "config/openclaw_bots.json policy.default_provider and fall back to legacy provider/model",
+            evidence={
+                "paths": ["scripts/quality/check_model_provider_drift_guard.py"],
+                "snippets": [
+                    """
+                    FORBIDDEN_PROVIDER_STRINGS = ("legacy-qwen", "legacy-openai")
+                    ALLOWED_FILES = (
+                        "generated/provider_snapshot.json",
+                        "generated/runtime_manifest.json",
+                        "generated/model_map.json",
+                    )
+                    """
+                ],
+            },
+            context={"recurrence": "repeated", "harm": "high"},
+        )
+
+        failure = review["failure_class"]
+        self.assertEqual(failure["subject"], "model provider resolution")
+        self.assertEqual(review["control_level"], "L5_static_quality_guard")
+        self.assertNotEqual(failure["subject"], "generated artifact")
+        self.assertIn("policy.default_provider", failure["bad_pattern"])
+
 
 if __name__ == "__main__":
     unittest.main()

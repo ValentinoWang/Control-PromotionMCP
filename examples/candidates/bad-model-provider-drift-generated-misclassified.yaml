@@ -1,0 +1,21 @@
+candidate_text: |
+  model-provider-drift guard checks generated config snapshots so runtime code cannot bypass
+  config/openclaw_bots.json policy.default_provider and fall back to legacy provider/model.
+evidence:
+  guard_spec_path: examples/guard-specs/bad-model-provider-drift-generated-misclassified.yaml
+  paths:
+    - scripts/quality/check_model_provider_drift_guard.py
+  snippets:
+    - |
+      FORBIDDEN_PROVIDER_STRINGS = (
+          "legacy-qwen",
+          "legacy-openai",
+      )
+      ALLOWED_FILES = (
+          "generated/provider_snapshot.json",
+          "generated/runtime_manifest.json",
+          "generated/model_map.json",
+      )
+context:
+  recurrence: repeated
+  harm: high

@@ -54,6 +54,20 @@ class GuardSpecTest(unittest.TestCase):
         self.assertFalse(review["guard_quality_review"]["promotion_gate"]["can_promote_to_L5"])
         self.assertIn("high_specificity_risk", review["guard_quality_review"]["promotion_gate"]["blockers"])
 
+    def test_model_provider_drift_sample_promotes_with_correct_taxonomy(self) -> None:
+        candidate = load_data("examples/candidates/good-model-provider-drift.yaml")
+        evidence = candidate["evidence"]
+        evidence = {**evidence, "guard_spec": load_data(evidence["guard_spec_path"])}
+        review = evaluate_control_candidate(
+            candidate["candidate_text"],
+            evidence=evidence,
+            context=candidate["context"],
+        )
+
+        self.assertEqual(review["decision"], "promote")
+        self.assertEqual(review["failure_class"]["subject"], "model provider resolution")
+        self.assertTrue(review["guard_quality_review"]["promotion_gate"]["can_promote_to_L5"])
+
 
 if __name__ == "__main__":
     unittest.main()

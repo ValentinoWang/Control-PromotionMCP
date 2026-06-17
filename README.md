@@ -210,6 +210,7 @@ The bad sample is intentionally blocked because it has a one-incident phrase den
 - `schema://guard-spec`
 - `sample://guard-spec/good-creation-table-contract`
 - `sample://guard-spec/bad-incident-string-guard`
+- `sample://guard-spec/good-model-provider-drift`
 - `template://smell-gate-report`
 
 ## Exposed MCP Prompts
