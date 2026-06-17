@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from control_promotion.core.abstraction import review_abstraction
 from control_promotion.core.fingerprint import classify_failure_class
 from control_promotion.core.proof_obligation import proof_for_level
 from control_promotion.core.retirement import retirement_condition
@@ -27,7 +28,8 @@ def evaluate_control_candidate(
     provided_paths = evidence.get("paths", []) if isinstance(evidence, dict) else []
     provided_commands = evidence.get("commands", []) if isinstance(evidence, dict) else []
     confidence = "guarded" if provided_paths or provided_commands else "tentative"
-    decision = "promote" if route.control_level.startswith(("L5", "L6", "L7")) else "hold"
+    abstraction_review = review_abstraction(candidate_text, evidence)
+    decision = _decision_for(route.control_level, abstraction_review)
 
     return {
         "decision": decision,
@@ -42,6 +44,7 @@ def evaluate_control_candidate(
             "paths": provided_paths,
             "commands": provided_commands,
         },
+        "abstraction_review": abstraction_review,
         "retirement": retirement_condition(route.control_level, str(fingerprint["bad_pattern"])),
     }
 
@@ -52,7 +55,7 @@ def _infer_detectability(candidate_text: str, evidence: dict[str, Any]) -> str:
     joined = f"{text} {paths}"
     if any(token in joined for token in ("screenshot", "playwright", "appium", "e2e", "runtime", "browser")):
         return "runtime"
-    if any(token in joined for token in ("schema", "openapi", "type", "contract", "sdk")):
+    if any(token in joined for token in ("schema", "openapi", "type_schema", "sdk")):
         return "contract"
     if any(token in joined for token in ("guard", "lint", "static", "grep", "ast", "scripts/quality")):
         return "static"
@@ -67,3 +70,16 @@ def _future_level(control_level: str) -> str:
     if control_level.startswith("L3"):
         return "L5_static_quality_guard"
     return control_level
+
+
+def _decision_for(control_level: str, abstraction_review: dict[str, Any]) -> str:
+    if not control_level.startswith(("L5", "L6", "L7")):
+        return "hold"
+    specificity_risk = abstraction_review["specificity_risk"]
+    if specificity_risk == "high":
+        return "refactor_before_promote"
+    if specificity_risk == "medium":
+        return "promote_with_follow_up"
+    if specificity_risk == "low":
+        return "promote"
+    raise ValueError(f"unknown specificity risk: {specificity_risk}")

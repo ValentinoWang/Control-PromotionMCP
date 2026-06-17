@@ -28,6 +28,17 @@ def classify_failure_class(text: str) -> dict[str, str | list[str]]:
         boundary = "rendered UI surface"
         bad_pattern = "visual regression not captured by static checks"
         missing_proof = ["viewport", "route", "artifact", "acceptance_rule"]
+    elif any(token in lowered for token in ("guard", "denylist", "forbidden", "allowlist", "blacklist")):
+        subject = "quality guard"
+        boundary = "project invariant"
+        bad_pattern = "exact incident literals or current file paths guarded without a named contract"
+        missing_proof = [
+            "canonical_contract",
+            "targeted_positive_case",
+            "targeted_negative_case",
+            "scoped_surface_discovery",
+            "exception_policy",
+        ]
 
     return {
         "subject": subject,

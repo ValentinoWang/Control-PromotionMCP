@@ -6,6 +6,7 @@ from typing import Any
 def render_smell_gate_report(review: dict[str, Any]) -> str:
     failure = review.get("failure_class", {})
     routing = review.get("routing", {})
+    abstraction = review.get("abstraction_review", {})
     lines = [
         "# Smell Gate Report",
         "",
@@ -13,6 +14,7 @@ def render_smell_gate_report(review: dict[str, Any]) -> str:
         f"- Control level: `{review.get('control_level', 'unknown')}`",
         f"- Confidence: `{review.get('confidence', 'unknown')}`",
         f"- Destination: `{routing.get('destination', 'unknown')}`",
+        f"- Specificity risk: `{abstraction.get('specificity_risk', 'unknown')}`",
         "",
         "## Protected Invariant",
         "",
@@ -28,6 +30,27 @@ def render_smell_gate_report(review: dict[str, Any]) -> str:
         "",
     ]
     lines.extend(f"- {item}" for item in review.get("required_proof", []))
+    lines.extend(
+        [
+            "",
+            "## Abstraction / Overfit Assessment",
+            "",
+            f"- Specificity risk: `{abstraction.get('specificity_risk', 'unknown')}`",
+            f"- Recommendation: `{abstraction.get('recommendation', 'unknown')}`",
+            "",
+            "### Overfit Signals",
+            "",
+        ]
+    )
+    lines.extend(_bullet_or_none(abstraction.get("overfit_signals", [])))
+    lines.extend(
+        [
+            "",
+            "### Missing Abstraction",
+            "",
+        ]
+    )
+    lines.extend(_bullet_or_none(abstraction.get("missing_abstraction", [])))
     lines.extend(
         [
             "",
@@ -48,3 +71,9 @@ def render_smell_gate_report(review: dict[str, Any]) -> str:
         ]
     )
     return "\n".join(lines)
+
+
+def _bullet_or_none(items: Any) -> list[str]:
+    if isinstance(items, list) and items:
+        return [f"- {item}" for item in items]
+    return ["- none"]

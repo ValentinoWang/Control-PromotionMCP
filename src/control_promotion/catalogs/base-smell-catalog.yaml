@@ -65,3 +65,39 @@ smells:
     retirement:
       condition: All SSOT-owned paths are edited only through owner-approved workflows or project overlays.
       action: keep_as_lightweight_pre_edit_guard
+  - id: incident-string-guard-without-contract
+    fingerprint:
+      subject: quality guard
+      boundary: project invariant
+      bad_pattern: exact incident literals or current file paths guarded without a named contract
+      missing_proof:
+        - canonical_contract
+        - targeted_positive_case
+        - targeted_negative_case
+        - scoped_surface_discovery
+        - exception_policy
+    protected_invariant: Guards must protect reusable project invariants, not only one observed incident.
+    control_state:
+      level: L5_static_quality_guard
+      destination: scripts/quality
+      promotion_blocker: abstraction_review.specificity_risk == high
+    routing:
+      destination: scripts/quality
+      why:
+        - static_detectable
+        - incident_overfit_risk
+    required_proof:
+      - canonical_contract
+      - targeted_positive_case
+      - targeted_negative_case
+      - scoped_surface_discovery
+      - exception_policy
+    exception_policy:
+      required_fields:
+        - reason
+        - owner
+        - expires
+        - scope
+    retirement:
+      condition: The guard is backed by a canonical contract, scoped surface discovery, and passing/failing fixtures.
+      action: promote_after_refactor

@@ -4,6 +4,7 @@
 - Control level: `{{ control_level }}`
 - Confidence: `{{ confidence }}`
 - Destination: `{{ routing.destination }}`
+- Specificity risk: `{{ abstraction_review.specificity_risk }}`
 
 ## Protected Invariant
 
@@ -18,6 +19,23 @@
 ## Required Proof
 
 {% for item in required_proof -%}
+- {{ item }}
+{% endfor %}
+
+## Abstraction / Overfit Assessment
+
+- Specificity risk: `{{ abstraction_review.specificity_risk }}`
+- Recommendation: `{{ abstraction_review.recommendation }}`
+
+### Overfit Signals
+
+{% for item in abstraction_review.overfit_signals -%}
+- {{ item }}
+{% endfor %}
+
+### Missing Abstraction
+
+{% for item in abstraction_review.missing_abstraction -%}
 - {{ item }}
 {% endfor %}
 

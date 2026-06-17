@@ -30,7 +30,7 @@ def route_control_destination(
     text = " ".join([failure_class, detectability, recurrence, harm, scope]).lower()
     reasons: list[str] = []
 
-    if any(token in text for token in ("type", "schema", "contract", "openapi", "sdk")):
+    if detectability in {"contract", "schema"} or any(token in text for token in ("type/schema", "type_schema", "openapi", "sdk")):
         return RouteDecision(
             destination="type_schema_contract",
             control_level="L7_type_schema_contract_prevention",

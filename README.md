@@ -119,6 +119,28 @@ The V1 HTTP server exposes `POST /mcp` and returns one JSON response. It binds t
 - `render_smell_gate_report`
 - `check_ssot_links`
 
+`evaluate_control_candidate` also returns an `abstraction_review` block. This block flags guard-quality issues that routing alone cannot catch, including incident-string denylist overfit, fixed current-file allowlists, missing positive/negative fixtures, missing canonical contracts, missing scoped surface discovery, and missing exception policies.
+
+Example high-risk result:
+
+```yaml
+decision: refactor_before_promote
+control_level: L5_static_quality_guard
+abstraction_review:
+  specificity_risk: high
+  overfit_signals:
+    - literal_incident_phrase_denylist
+    - fixed_current_file_allowlist
+    - missing_targeted_fixtures
+    - missing_canonical_contract
+  missing_abstraction:
+    - canonical_contract
+    - deprecated_alias_set
+    - scoped_surface_discovery
+    - exception_policy
+  recommendation: refactor_before_promote
+```
+
 ## Exposed MCP Resources
 
 - `control://ladder`
