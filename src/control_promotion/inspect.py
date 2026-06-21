@@ -86,7 +86,8 @@ def check_ssot_links(paths: list[str], project_root: str | Path = ".", adapter_p
 
     results = []
     for raw_path in paths:
-        path = (root / raw_path).resolve() if not Path(raw_path).is_absolute() else Path(raw_path)
+        raw = Path(raw_path)
+        path = raw if raw.is_absolute() else root / raw
         rel = str(path.relative_to(root)) if path.is_relative_to(root) else str(path)
         is_link = path.is_symlink()
         target = os.readlink(path) if is_link else None
